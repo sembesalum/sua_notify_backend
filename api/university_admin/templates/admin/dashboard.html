@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>University Admin Dashboard</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .header {
+            background-color: #333;
+            color: white;
+            padding: 15px;
+            margin-bottom: 20px;
+            border-radius: 5px;
+        }
+        .menu {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        .menu a {
+            text-decoration: none;
+            padding: 10px 15px;
+            background-color: #4CAF50;
+            color: white;
+            border-radius: 5px;
+        }
+        .menu a:hover {
+            background-color: #45a049;
+        }
+        .content {
+            background-color: white;
+            padding: 20px;
+            border-radius: 5px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+        th {
+            background-color: #f2f2f2;
+        }
+        form {
+            max-width: 500px;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        input, select {
+            width: 100%;
+            padding: 8px;
+            box-sizing: border-box;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        button {
+            background-color: #4CAF50;
+            color: white;
+            padding: 10px 15px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>University Admin Dashboard</h1>
+    </div>
+    
+    <div class="menu">
+        <a href="{% url 'create_university' %}">Create University</a>
+        <a href="{% url 'create_course' %}">Create Course</a>
+        <a href="{% url 'create_semester' %}">Create Semester</a>
+        <a href="{% url 'create_monitor' %}">Create Monitor</a>
+        <a href="{% url 'create_lecture' %}">Create Lecture</a>
+    </div>
+    
+    <div class="content">
+        {% block content %}
+        <h2>Welcome to University Administration</h2>
+        <p>Use the menu above to manage universities, courses, semesters, monitors, and lectures.</p>
+        {% endblock %}
+    </div>
+</body>
+</html>
