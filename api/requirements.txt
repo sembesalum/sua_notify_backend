@@ -7,9 +7,7 @@ channels==4.2.2
 channels_redis==4.2.1
 constantly==23.10.4
 cryptography==45.0.4
-daphne==4.2.0
 Django==5.2.3
-django-crontab==0.7.1
 django-filter==25.1
 djangorestframework==3.16.0
 hyperlink==21.0.0
@@ -27,4 +25,5 @@ sqlparse==0.5.3
 Twisted==25.5.0
 txaio==25.6.1
 typing_extensions==4.14.0
+whitenoise==6.9.0
 zope.interface==7.2

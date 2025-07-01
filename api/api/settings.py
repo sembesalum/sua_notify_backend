@@ -41,7 +41,6 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'rest_framework',
     'university_admin',
-    'django_crontab',
     
 ]
 
@@ -75,8 +74,6 @@ TEMPLATES = [
 ]
 
 # # WSGI_APPLICATION = 'api.wsgi.application'
-# WSGI_APPLICATION = 'daphne api.asgi:application'
-ASGI_APPLICATION = 'api.asgi.application'
 WSGI_APPLICATION = 'api.wsgi.application'
 
 
@@ -148,6 +145,3 @@ STATIC_URL = 'static/'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-CRONJOBS = [
-    ('*/5 * * * *', 'api.cron.send_timetable_reminders', '>> /tmp/cron_job.log'),  # Runs every 5 minutes
-]
