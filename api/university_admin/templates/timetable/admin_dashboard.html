@@ -21,6 +21,12 @@
             color: #333;
             text-align: center;
         }
+        h2 {
+            color: #444;
+            margin-top: 30px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #eee;
+        }
         .dashboard-grid {
             display: grid;
             grid-template-columns: repeat(2, 1fr);
@@ -39,7 +45,7 @@
             transform: translateY(-5px);
             box-shadow: 0 5px 15px rgba(0,0,0,0.1);
         }
-        .dashboard-card h2 {
+        .dashboard-card h3 {
             color: #444;
             margin-top: 0;
         }
@@ -51,9 +57,25 @@
             text-decoration: none;
             border-radius: 4px;
             transition: background-color 0.3s;
+            margin: 5px;
+            border: none;
+            cursor: pointer;
+            font-size: 14px;
         }
         .btn:hover {
             background-color: #45a049;
+        }
+        .btn-edit {
+            background-color: #2196F3;
+        }
+        .btn-edit:hover {
+            background-color: #0b7dda;
+        }
+        .btn-delete {
+            background-color: #f44336;
+        }
+        .btn-delete:hover {
+            background-color: #da190b;
         }
         .list-container {
             margin-top: 30px;
@@ -61,6 +83,7 @@
         table {
             width: 100%;
             border-collapse: collapse;
+            margin-bottom: 30px;
         }
         th, td {
             padding: 12px;
@@ -69,77 +92,381 @@
         }
         th {
             background-color: #f2f2f2;
+            position: sticky;
+            top: 0;
+        }
+        tr:hover {
+            background-color: #f5f5f5;
+        }
+        .action-buttons {
+            display: flex;
+            gap: 5px;
+        }
+        .section {
+            margin-bottom: 40px;
+        }
+        .pagination {
+            display: flex;
+            justify-content: center;
+            margin-top: 20px;
+        }
+        .pagination a {
+            margin: 0 5px;
+            padding: 5px 10px;
+            border: 1px solid #ddd;
+            text-decoration: none;
+        }
+        .pagination .current {
+            font-weight: bold;
+            padding: 5px 10px;
+        }
+        .messages {
+            margin: 20px 0;
+        }
+        .alert {
+            padding: 15px;
+            margin-bottom: 20px;
+            border: 1px solid transparent;
+            border-radius: 4px;
+        }
+        .alert-success {
+            color: #3c763d;
+            background-color: #dff0d8;
+            border-color: #d6e9c6;
+        }
+        form {
+            display: inline;
+            margin: 0;
+            padding: 0;
         }
     </style>
 </head>
 <body>
+    {% if messages %}
+    <div class="messages">
+        {% for message in messages %}
+        <div class="alert alert-{{ message.tags }}">
+            {{ message }}
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+    
     <div class="container">
         <h1>University Admin Dashboard</h1>
         
         <div class="dashboard-grid">
             <div class="dashboard-card">
-                <h2>Universities</h2>
+                <h3>Universities</h3>
+                <p>Total: {{ universities.paginator.count }}</p>
                 <a href="{% url 'create_university' %}" class="btn">Add University</a>
             </div>
             
             <div class="dashboard-card">
-                <h2>Courses</h2>
+                <h3>Courses</h3>
+                <p>Total: {{ courses.paginator.count }}</p>
                 <a href="{% url 'create_course' %}" class="btn">Add Course</a>
             </div>
             
             <div class="dashboard-card">
-                <h2>Semesters</h2>
+                <h3>Semesters</h3>
+                <p>Total: {{ semesters.paginator.count }}</p>
                 <a href="{% url 'create_semester' %}" class="btn">Add Semester</a>
             </div>
             
             <div class="dashboard-card">
-                <h2>Lectures</h2>
+                <h3>Lectures</h3>
+                <p>Total: {{ lectures.paginator.count }}</p>
                 <a href="{% url 'create_lecture' %}" class="btn">Add Lecture</a>
             </div>
             
             <div class="dashboard-card">
-                <h2>Monitors</h2>
+                <h3>Monitors</h3>
+                <p>Total: {{ monitors.paginator.count }}</p>
                 <a href="{% url 'create_monitor' %}" class="btn">Add Monitor</a>
             </div>
         </div>
         
         <div class="list-container">
-            <h2>Recent Entries</h2>
-            <table>
-                <tr>
-                    <th>Type</th>
-                    <th>Name</th>
-                    <th>Created At</th>
-                </tr>
-                {% for uni in universities %}
-                <tr>
-                    <td>University</td>
-                    <td>{{ uni.name }}</td>
-                    <td>{{ uni.created_at }}</td>
-                </tr>
-                {% endfor %}
-                {% for course in courses %}
-                <tr>
-                    <td>Course</td>
-                    <td>{{ course.name }}</td>
-                    <td>{{ course.created_at }}</td>
-                </tr>
-                {% endfor %}
-                {% for lecture in lectures %}
-                <tr>
-                    <td>Lecture</td>
-                    <td>{{ lecture.get_full_name }}</td>
-                    <td>{{ lecture.date_joined }}</td>
-                </tr>
-                {% endfor %}
-                {% for monitor in monitors %}
-                <tr>
-                    <td>Monitor</td>
-                    <td>{{ monitor.get_full_name }}</td>
-                    <td>{{ monitor.date_joined }}</td>
-                </tr>
-                {% endfor %}
-            </table>
+            <!-- Universities Section -->
+            <div class="section">
+                <h2>All Universities</h2>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th>Location</th>
+                            <th>Established</th>
+                            <th>Created At</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for uni in universities %}
+                        <tr>
+                            <td>{{ uni.name }}</td>
+                            <td>{{ uni.location }}</td>
+                            <td>{{ uni.established_year }}</td>
+                            <td>{{ uni.created_at|date:"Y-m-d H:i" }}</td>
+                            <td class="action-buttons">
+                                <a href="{% url 'edit_university' uni.id %}" class="btn btn-edit">Edit</a>
+                                <form method="post" action="{% url 'delete_university' uni.id %}">
+                                    {% csrf_token %}
+                                    <button type="submit" class="btn btn-delete">Delete</button>
+                                </form>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="5">No universities found.</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+                {% if universities.paginator.num_pages > 1 %}
+                <div class="pagination">
+                    {% if universities.has_previous %}
+                        <a href="?university_page=1">&laquo; first</a>
+                        <a href="?university_page={{ universities.previous_page_number }}">previous</a>
+                    {% endif %}
+
+                    <span class="current">
+                        Page {{ universities.number }} of {{ universities.paginator.num_pages }}
+                    </span>
+
+                    {% if universities.has_next %}
+                        <a href="?university_page={{ universities.next_page_number }}">next</a>
+                        <a href="?university_page={{ universities.paginator.num_pages }}">last &raquo;</a>
+                    {% endif %}
+                </div>
+                {% endif %}
+            </div>
+            
+            <!-- Courses Section -->
+            <div class="section">
+                <h2>All Courses</h2>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th>University</th>
+                            <th>Duration</th>
+                            <th>Created At</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for course in courses %}
+                        <tr>
+                            <td>{{ course.name }}</td>
+                            <td>{{ course.university.name }}</td>
+                            <td>{{ course.duration_years }} years</td>
+                            <td>{{ course.created_at|date:"Y-m-d H:i" }}</td>
+                            <td class="action-buttons">
+                                <a href="{% url 'edit_course' course.id %}" class="btn btn-edit">Edit</a>
+                                <form method="post" action="{% url 'delete_course' course.id %}">
+                                    {% csrf_token %}
+                                    <button type="submit" class="btn btn-delete">Delete</button>
+                                </form>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="5">No courses found.</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+                {% if courses.paginator.num_pages > 1 %}
+                <div class="pagination">
+                    {% if courses.has_previous %}
+                        <a href="?course_page=1">&laquo; first</a>
+                        <a href="?course_page={{ courses.previous_page_number }}">previous</a>
+                    {% endif %}
+
+                    <span class="current">
+                        Page {{ courses.number }} of {{ courses.paginator.num_pages }}
+                    </span>
+
+                    {% if courses.has_next %}
+                        <a href="?course_page={{ courses.next_page_number }}">next</a>
+                        <a href="?course_page={{ courses.paginator.num_pages }}">last &raquo;</a>
+                    {% endif %}
+                </div>
+                {% endif %}
+            </div>
+            
+            <!-- Semesters Section -->
+            <div class="section">
+                <h2>All Semesters</h2>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th>Course</th>
+                            <th>Start Date</th>
+                            <th>End Date</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for semester in semesters %}
+                        <tr>
+                            <td>{{ semester.name }}</td>
+                            <td>{{ semester.course.name }}</td>
+                            <td>{{ semester.start_date|date:"Y-m-d" }}</td>
+                            <td>{{ semester.end_date|date:"Y-m-d" }}</td>
+                            <td class="action-buttons">
+                                <a href="{% url 'edit_semester' semester.id %}" class="btn btn-edit">Edit</a>
+                                <form method="post" action="{% url 'delete_semester' semester.id %}">
+                                    {% csrf_token %}
+                                    <button type="submit" class="btn btn-delete">Delete</button>
+                                </form>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="5">No semesters found.</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+                {% if semesters.paginator.num_pages > 1 %}
+                <div class="pagination">
+                    {% if semesters.has_previous %}
+                        <a href="?semester_page=1">&laquo; first</a>
+                        <a href="?semester_page={{ semesters.previous_page_number }}">previous</a>
+                    {% endif %}
+
+                    <span class="current">
+                        Page {{ semesters.number }} of {{ semesters.paginator.num_pages }}
+                    </span>
+
+                    {% if semesters.has_next %}
+                        <a href="?semester_page={{ semesters.next_page_number }}">next</a>
+                        <a href="?semester_page={{ semesters.paginator.num_pages }}">last &raquo;</a>
+                    {% endif %}
+                </div>
+                {% endif %}
+            </div>
+            
+            <!-- Lectures Section -->
+            <div class="section">
+                <h2>All Lectures</h2>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th>Email</th>
+                            <th>University</th>
+                            <th>Courses</th>
+                            <th>Joined At</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for lecture in lectures %}
+                        <tr>
+                            <td>{{ lecture.get_full_name }}</td>
+                            <td>{{ lecture.email }}</td>
+                            <td>{{ lecture.university.name }}</td>
+                            <td>
+                                {% for course in lecture.courses.all %}
+                                    {{ course.name }}{% if not forloop.last %}, {% endif %}
+                                {% endfor %}
+                            </td>
+                            <td>{{ lecture.date_joined|date:"Y-m-d H:i" }}</td>
+                            <td class="action-buttons">
+                                <a href="{% url 'edit_lecture' lecture.id %}" class="btn btn-edit">Edit</a>
+                                <form method="post" action="{% url 'delete_lecture' lecture.id %}">
+                                    {% csrf_token %}
+                                    <button type="submit" class="btn btn-delete">Delete</button>
+                                </form>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="6">No lectures found.</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+                {% if lectures.paginator.num_pages > 1 %}
+                <div class="pagination">
+                    {% if lectures.has_previous %}
+                        <a href="?lecture_page=1">&laquo; first</a>
+                        <a href="?lecture_page={{ lectures.previous_page_number }}">previous</a>
+                    {% endif %}
+
+                    <span class="current">
+                        Page {{ lectures.number }} of {{ lectures.paginator.num_pages }}
+                    </span>
+
+                    {% if lectures.has_next %}
+                        <a href="?lecture_page={{ lectures.next_page_number }}">next</a>
+                        <a href="?lecture_page={{ lectures.paginator.num_pages }}">last &raquo;</a>
+                    {% endif %}
+                </div>
+                {% endif %}
+            </div>
+            
+            <!-- Monitors Section -->
+            <div class="section">
+                <h2>All Monitors</h2>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th>Email</th>
+                            <th>University</th>
+                            <th>Course</th>
+                            <th>Semester</th>
+                            <th>Joined At</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for monitor in monitors %}
+                        <tr>
+                            <td>{{ monitor.get_full_name }}</td>
+                            <td>{{ monitor.email }}</td>
+                            <td>{{ monitor.university.name }}</td>
+                            <td>{{ monitor.course.name }}</td>
+                            <td>{{ monitor.semester.name }}</td>
+                            <td>{{ monitor.date_joined|date:"Y-m-d H:i" }}</td>
+                            <td class="action-buttons">
+                                <a href="{% url 'edit_monitor' monitor.id %}" class="btn btn-edit">Edit</a>
+                                <form method="post" action="{% url 'delete_monitor' monitor.id %}">
+                                    {% csrf_token %}
+                                    <button type="submit" class="btn btn-delete">Delete</button>
+                                </form>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="7">No monitors found.</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+                {% if monitors.paginator.num_pages > 1 %}
+                <div class="pagination">
+                    {% if monitors.has_previous %}
+                        <a href="?monitor_page=1">&laquo; first</a>
+                        <a href="?monitor_page={{ monitors.previous_page_number }}">previous</a>
+                    {% endif %}
+
+                    <span class="current">
+                        Page {{ monitors.number }} of {{ monitors.paginator.num_pages }}
+                    </span>
+
+                    {% if monitors.has_next %}
+                        <a href="?monitor_page={{ monitors.next_page_number }}">next</a>
+                        <a href="?monitor_page={{ monitors.paginator.num_pages }}">last &raquo;</a>
+                    {% endif %}
+                </div>
+                {% endif %}
+            </div>
         </div>
     </div>
 </body>

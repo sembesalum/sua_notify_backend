@@ -25,7 +25,7 @@ SECRET_KEY = 'django-insecure-h30dm#e4xm$2hm-_vdd0$766*oybz4+3$**bpln1uo)jtg01r2
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['levelsprotech.pythonanywhere.com', '127.0.0.1']
 
 AUTH_USER_MODEL = 'university_admin.User'  # or 'university_admin.AdminUser'
 
@@ -37,13 +37,18 @@ INSTALLED_APPS = [
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
+    'daphne',
     'django.contrib.staticfiles',
     'rest_framework',
     'university_admin',
+    'channels',
+    'django_crontab',
+    
 ]
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware', 
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     # 'django.middleware.csrf.CsrfViewMiddleware',
@@ -70,7 +75,22 @@ TEMPLATES = [
     },
 ]
 
+# # WSGI_APPLICATION = 'api.wsgi.application'
+# WSGI_APPLICATION = 'daphne api.asgi:application'
+ASGI_APPLICATION = 'api.asgi.application'
 WSGI_APPLICATION = 'api.wsgi.application'
+
+
+CHANNEL_LAYERS = {
+    'default': {
+        'BACKEND': 'channels.layers.InMemoryChannelLayer',
+        # For production use Redis:
+        # 'BACKEND': 'channels_redis.core.RedisChannelLayer',
+        # 'CONFIG': {
+        #     "hosts": [('redis', 6379)],
+        # },
+    },
+}
 
 
 # Database
@@ -102,17 +122,21 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
+STATIC_URL = '/static/'
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
 # Internationalization
 # https://docs.djangoproject.com/en/5.1/topics/i18n/
 
 LANGUAGE_CODE = 'en-us'
 
-TIME_ZONE = 'UTC'
+TIME_ZONE = 'Africa/Dar_es_Salaam'
+
+USE_TZ = True
 
 USE_I18N = True
 
-USE_TZ = True
 
 
 # Static files (CSS, JavaScript, Images)
@@ -124,3 +148,7 @@ STATIC_URL = 'static/'
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+CRONJOBS = [
+    ('*/5 * * * *', 'api.cron.send_timetable_reminders', '>> /tmp/cron_job.log'),  # Runs every 5 minutes
+]

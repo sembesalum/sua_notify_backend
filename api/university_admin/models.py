@@ -1,5 +1,7 @@
 from django.db import models
 from django.contrib.auth.models import AbstractUser
+from django.utils import timezone
+from datetime import timedelta
 
 class University(models.Model):
     name = models.CharField(max_length=200)
@@ -97,6 +99,39 @@ class Timetable(models.Model):
     
     def __str__(self):
         return f"{self.subject_code} - {self.day} {self.start_time}-{self.end_time}"
+    
+    @property
+    def starts_soon(self):
+        """Check if this timetable starts within the next 30 minutes"""
+        now = timezone.now()
+        if self.day != now.strftime('%A').upper():
+            return False
+            
+        start_datetime = timezone.make_aware(
+            timezone.datetime.combine(now.date(), self.start_time)
+        )
+        return 0 < (start_datetime - now).total_seconds() <= 1800  # 30 minutes
+
+    def send_reminder(self):
+        """Send immediate reminder for this timetable"""
+        from channels.layers import get_channel_layer
+        from asgiref.sync import async_to_sync
+        
+        channel_layer = get_channel_layer()
+        now = timezone.now()
+        
+        async_to_sync(channel_layer.group_send)(
+            f"user_{self.lecturer.id}",
+            {
+                "type": "send.notification",
+                "id": -3,  # Immediate reminder ID
+                "title": "Class Starting Soon",
+                "message": f"{self.subject_name} starts now at {self.venue}",
+                "timetable_id": self.id,
+                "created_at": now.strftime('%Y-%m-%d %H:%M:%S'),
+                "is_read": False
+            }
+        )
 
 class Notification(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='notifications')
